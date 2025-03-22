@@ -519,7 +519,7 @@ export class GameService {
     const connectedPlayers = game.players.filter(
       (p) => p.isConnected && !p.isSpectator
     );
-    if (connectedPlayers.length < 2) {
+    if (connectedPlayers.length < 4) {
       logger.debug("Not enough connected players to start game", {
         gameId,
         connectedPlayers: connectedPlayers.length,
