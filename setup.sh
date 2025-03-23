@@ -9,7 +9,7 @@ ENV=${ENV:-"development"}
 SERVER_PORT=${SERVER_PORT:-3001}
 CLIENT_PORT=${CLIENT_PORT:-3000}
 SERVER_DIR="./server"
-CLIENT_DIR="./client/typing-race-client"
+CLIENT_DIR="./client"
 LOG_DIR="./logs"
 
 # Text styling
