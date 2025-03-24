@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: typing-game-server-dev
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - CLIENT_URL=http://localhost:3000
+      - MAX_PLAYERS_PER_GAME=4
+      - COUNTDOWN_SECONDS=3
+      - MAX_RACE_TIME_MINUTES=3
+      - CLEANUP_DELAY_MINUTES=5
+      - LOG_LEVEL=debug
+    volumes:
+      - ./server/src:/app/src
+      - ./server/dist:/app/dist
+      - ./server/.env:/app/.env
+    command: npm run dev
+    restart: unless-stopped
+    networks:
+      - typing-game-network
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: typing-game-client-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001
+      - REACT_APP_WS_URL=ws://localhost:3001
+    volumes:
+      - ./client/src:/app/src
+      - ./client/public:/app/public
+      - ./client/node_modules:/app/node_modules
+    command: npm start
+    restart: unless-stopped
+    depends_on:
+      - server
+    networks:
+      - typing-game-network
+
+networks:
+  typing-game-network:
+    driver: bridge

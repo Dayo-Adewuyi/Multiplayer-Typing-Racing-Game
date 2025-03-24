@@ -148,6 +148,93 @@ npm run build   # Build for production
 npx serve -s build # Serve production build
 ```
 
+### Docker Setup 
+This project uses Docker to containerize both the server and client components, making it easy to set up and run the application in any environment.
+
+#### Prerequisites
+Make sure you have the following installed on your system:
+
+Docker: Install Docker
+Docker Compose: Install Docker Compose
+Project Structure
+The project is organized as follows:
+
+
+Copy
+.
+├── client/             # Frontend React application
+│   ├── Dockerfile      # Client Docker configuration
+│   └── ... 
+├── server/             # Backend Node.js/Express application
+│   ├── Dockerfile      # Server Docker configuration
+│   ├── .env            # Server environment variables
+│   └── ...
+└── docker-compose.yml  # Docker Compose configuration file
+
+
+#### Setup Instructions
+1. Configure Environment Variables
+Before starting the application, make sure the server's environment variables are properly configured:
+
+Navigate to the server directory:
+
+Copy
+cd server
+Copy the example environment file if you haven't done so already:
+
+Copy
+cp .env.example .env
+Edit the .env file to configure your environment if needed.
+2. Start the Application
+From the root directory of the project, run:
+
+
+Copy
+docker-compose up
+This will:
+
+Build and start the server container on port 3001
+Build and start the client container on port 3000
+Set up a network for container communication
+To run the containers in the background (detached mode), use:
+
+
+Copy
+docker-compose up -d
+3. Access the Application
+Once the containers are running:
+
+The client application will be available at: http://localhost:3000
+The server API will be available at: http://localhost:3001
+4. Stop the Application
+To stop the containers, press Ctrl+C if running in the foreground, or run:
+
+
+Copy
+docker-compose down
+Development Workflow
+The Docker setup includes volume mounts that enable hot-reloading for both the client and server code. This means you can edit the source files on your host machine, and the changes will be automatically reflected in the running containers.
+
+##### Troubleshooting
+Issue: Cannot connect to the server from the client
+If the client can't connect to the server, ensure that:
+
+Both containers are running (docker-compose ps)
+The server environment variables are correctly set
+The client environment is configured to connect to the server at http://server:3001
+Issue: Changes not reflecting in the running application
+If changes to your code are not being reflected:
+
+Check that the volume mounts are correctly set up in the docker-compose.yml file
+Ensure that your development environment supports hot-reloading
+Try rebuilding the containers with docker-compose up --build
+Issue: Port conflicts
+If you're seeing port conflicts (e.g., "port already in use"), check if other applications are using ports 3000 or 3001, and either:
+
+Stop those applications
+Change the port mappings in the docker-compose.yml file
+
+
 ### Environment Configuration
 
 #### Server (.env)
