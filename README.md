@@ -383,12 +383,6 @@ Comprehensive system monitoring and metrics collection:
 
 ## Performance Considerations
 
-### Scaling Strategies
-
-1. **Horizontal Scaling**: Add more server instances behind a load balancer
-2. **Game Sharding**: Distribute games across server instances
-3. **Database Scaling**: Add caching and read replicas for persistence layer
-
 ### Memory Management
 
 The server implements several strategies to manage memory efficiently:
