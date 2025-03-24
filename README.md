@@ -159,7 +159,7 @@ Docker Compose: Install Docker Compose
 Project Structure
 The project is organized as follows:
 
-
+```bash
 Copy
 .
 ├── client/             # Frontend React application
@@ -171,7 +171,7 @@ Copy
 │   └── ...
 └── docker-compose.yml  # Docker Compose configuration file
 
-
+``` 
 #### Setup Instructions
 1. Configure Environment Variables
 Before starting the application, make sure the server's environment variables are properly configured:
