@@ -46,8 +46,8 @@ const config: AppConfig = {
 
   maxPlayersPerGame: getNumericEnv('MAX_PLAYERS_PER_GAME', 4),
   countdownSeconds: getNumericEnv('COUNTDOWN_SECONDS', 3),
-  maxRaceTimeMs: getNumericEnv('MAX_RACE_TIME_MINUTES', 3) * 60 * 1000,
-  cleanupDelayMs: getNumericEnv('CLEANUP_DELAY_MINUTES', 5) * 60 * 1000,
+  maxRaceTimeMs: getNumericEnv('MAX_RACE_TIME_MINUTES', 1) * 60 * 1000,
+  cleanupDelayMs: getNumericEnv('CLEANUP_DELAY_MINUTES', 3) * 60 * 1000,
   
 
   logLevel: getEnv('LOG_LEVEL', 'info'),

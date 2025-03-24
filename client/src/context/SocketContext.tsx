@@ -61,6 +61,15 @@ export interface RaceReplay {
   players: {
     id: string;
     name: string;
+    color: string;
+    finalStats: any;
+    progressSnapshots:{
+      currentIndex: number;
+      timestamp: number;
+      wpm: number;
+      accuracy: number;
+      position: number;
+    }[];
     snapshots: {
       timestamp: number;
       position: number;
@@ -131,6 +140,8 @@ export interface SocketContextType {
   
   lastError: { message: string; code: string } | null;
   clearError: () => void;
+  countdown: number | null;
+  startTime: number | null;
 }
 
 const defaultSocketContext: SocketContextType = {
@@ -158,6 +169,8 @@ const defaultSocketContext: SocketContextType = {
   setSystemConfig: () => Promise.resolve(),
   lastError: null,
   clearError: () => {},
+  countdown: null,
+  startTime: null
 };
 
 export const SocketContext = createContext<SocketContextType>(defaultSocketContext);
@@ -178,14 +191,14 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
   const socketRef = useRef<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
-  
+  const [startTime, setStartTime] = useState<number | null>(null)
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
   const [currentGameId, setCurrentGameId] = useState<string | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isSpectator, setIsSpectator] = useState(false);
   const [raceSummary, setRaceSummary] = useState<RaceSummary | null>(null);
   const [replay, setReplay] = useState<RaceReplay | null>(null);
-  
+  const [countdown, setCountdown] = useState<number | null>(null);
   const [lastError, setLastError] = useState<{ message: string; code: string } | null>(null);
   
   const updateThrottleRef = useRef<NodeJS.Timeout | null>(null);
@@ -203,7 +216,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
         reconnectionDelayMax: 5000,
         timeout: 20000,
       });
-      console.log('Connecting to socket server...', newSocket);
       socketRef.current = newSocket;
     } catch (error) {
       setConnectionError(`Failed to connect: ${error instanceof Error ? error.message : String(error)}`);
@@ -294,6 +306,14 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
     const onError = (error: { message: string; code: string }) => {
       setLastError(error);
     };
+
+    const onCountDown = (data: { countdown: number }) => {
+      setCountdown(data.countdown);
+    };
+
+    const onGameStarted = (data: any) =>{
+      setStartTime(data.startTime)
+    }
     
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
@@ -304,6 +324,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
     socket.on(ServerEvents.GAME_FINISHED, onGameFinished);
     socket.on(ServerEvents.REPLAY_DATA, onReplayData);
     socket.on(ServerEvents.ERROR, onError);
+    socket.on(ServerEvents.GAME_COUNTDOWN, onCountDown);
+    socket.on(ServerEvents.GAME_STARTED, onGameStarted);
     
     if (socket.connected) {
       setIsConnected(true);
@@ -319,6 +341,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
       socket.off(ServerEvents.GAME_FINISHED, onGameFinished);
       socket.off(ServerEvents.REPLAY_DATA, onReplayData);
       socket.off(ServerEvents.ERROR, onError);
+      socket.off(ServerEvents.GAME_COUNTDOWN, onGameStateUpdate);
       
       if (updateThrottleRef.current) {
         clearTimeout(updateThrottleRef.current);
@@ -374,7 +397,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
           isSpectator: asSpectator
         };
         
-        console.log("payload",payload)
         const handleGameJoined = () => {
           resolve();
         };
@@ -663,6 +685,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
     setSystemConfig,
     lastError,
     clearError,
+    countdown,
+    startTime
   };
   
   return <SocketContext.Provider value={contextValue}>{children}</SocketContext.Provider>;

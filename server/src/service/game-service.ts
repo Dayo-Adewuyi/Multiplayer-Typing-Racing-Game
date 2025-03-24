@@ -268,7 +268,7 @@ export class GameService {
   
  
   public reduceReplayRetentionTime(): void {
-    this.replayRetentionTimeMs = 15 * 60 * 1000; // 15 minutes
+    this.replayRetentionTimeMs = 15 * 60 * 1000; 
     logger.info(`Reduced replay retention time to ${this.replayRetentionTimeMs / 60000} minutes`);
   }
   
@@ -607,6 +607,9 @@ export class GameService {
       replay.startTime = game.startTime;
     }
 
+    this.io.to(gameId).emit(ServerEvents.GAME_STATE_UPDATE, {
+      gameState: this.getGameState(gameId),
+    });
     this.io.to(gameId).emit(ServerEvents.GAME_STARTED, {
       gameId,
       startTime: game.startTime,
@@ -726,7 +729,7 @@ export class GameService {
     const startTime = performance.now();
 
     const game = this.getGame(gameId);
-
+  console.log("game",game)
     if (game.state !== GameState.RACING) {
       logger.warn("Cannot mark player as finished, game not in racing state", {
         gameId,
@@ -736,7 +739,15 @@ export class GameService {
     }
 
     const player = this.getPlayer(game, playerId);
-
+    logger.info("Player finished",{
+      game,
+      gameId,
+      playerId,
+      playerName: player.name,
+      wpm,
+      accuracy,
+      finishTime,
+    })
     if (player.isSpectator) {
       return false;
     }
@@ -913,7 +924,6 @@ export class GameService {
       return;
     }
   
-    // Notify players about the game termination if it's still active
     if (game.state !== GameState.FINISHED) {
       this.io.to(gameId).emit(ServerEvents.GAME_TERMINATED, {
         gameId,
@@ -927,7 +937,6 @@ export class GameService {
       });
     }
   
-    // Disconnect all players from the game room
     game.players.forEach((player) => {
       this.removePlayerFromGame(player.id, gameId);
     });
@@ -940,7 +949,6 @@ export class GameService {
       state: game.state,
     });
   
-    // Schedule replay data cleanup with proper error handling
     setTimeout(() => {
       try {
         if (this.replayStorage.has(gameId)) {

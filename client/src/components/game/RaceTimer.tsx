@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 
 interface RaceTimerProps {
   time: number;
@@ -16,7 +15,6 @@ const RaceTimer: React.FC<RaceTimerProps> = ({
 }) => {
   const [displayTime, setDisplayTime] = useState('00:00.000');
   const [isHighlighted, setIsHighlighted] = useState(false);
-  
   useEffect(() => {
     const minutes = Math.floor(time / 60000);
     const seconds = Math.floor((time % 60000) / 1000);

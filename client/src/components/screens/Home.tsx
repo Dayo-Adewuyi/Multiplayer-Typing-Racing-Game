@@ -65,7 +65,6 @@ const Home: React.FC = () => {
     try {
       setIsCreating(true);
      const gameId =  await createGame(playerName.trim());
-      console.log('Game created with ID:', gameId);
     } catch (error) {
       console.error('Error creating game:', error);
     } finally {

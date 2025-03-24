@@ -142,7 +142,7 @@ interface CarIconProps {
   wpm: number;
 }
 
-const CarIcon: React.FC<CarIconProps> = ({ color, isCurrentPlayer, position, wpm }) => {
+export const CarIcon: React.FC<CarIconProps> = ({ color, isCurrentPlayer, position, wpm }) => {
   const intensity = Math.min(1, wpm / 150); 
   
   return (
@@ -226,5 +226,4 @@ const CarIcon: React.FC<CarIconProps> = ({ color, isCurrentPlayer, position, wpm
     </motion.div>
   );
 };
-
 export default RaceTrack;

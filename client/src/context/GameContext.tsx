@@ -243,7 +243,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     getReplay: socketGetReplay,
     getGameState: socketGetGameState,
     lastError,
-    isConnected
+    isConnected,
+    startTime,
   } = useSocket();
 
   useEffect(() => {
@@ -283,11 +284,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [lastError]);
 
-  useEffect(() => {
-    console.log('Game state update:', gameState);
-    console.log('Current local state:', state);
-    // rest of your effect...
-  }, [gameState, state]);
+
   useEffect(() => {
     if (!gameState || !currentGameId) return;
     
@@ -304,13 +301,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       gameState.state === 'finished' && 
       state.currentGame?.state !== 'finished';
     
+    
     if (gameState.state === 'waiting' && !isOnLobbyPage) {
       navigate(`/lobby/${currentGameId}`);
-    } else if (gameState.state === 'racing') {
+    } else if (gameState.state === 'racing' ) {
+     
       if (needsRaceStartDispatch) {
         dispatch({ 
           type: 'RACE_STARTED', 
-          payload: gameState.startTime || Date.now() 
+          payload: startTime|| gameState.startTime || Date.now() 
         });
       }
       
@@ -341,7 +340,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     currentGameId, 
     navigate, 
   ]);
-  
+ 
+
 
   useEffect(() => {
     const joinFromUrl = async () => {
@@ -486,6 +486,30 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return Math.min(Math.max(0, accuracy), 100);
   };
 
+  const finishRace = useCallback(
+    async (wpm: number, accuracy: number): Promise<void> => {
+      if (!currentGameId || isSpectator) return;
+      
+      const finishTime = Date.now();
+      
+      try {
+        await socketFinishRace(wpm, accuracy, finishTime);
+        
+        toast.success('Race completed!', {
+          icon: '🏁',
+          duration: 3000
+        });
+      } catch (error) {
+        let message = 'Failed to finish race';
+        if (error instanceof Error) {
+          message = error.message;
+        }
+        
+        toast.error(message);
+      }
+    },
+    [currentGameId, socketFinishRace, isSpectator]
+  );
   const updateProgress = useCallback(
     (currentIndex: number, typedText: string, errors: number): void => {
       if (!currentGameId || !state.isRacing || !state.raceText || isSpectator) return;
@@ -515,33 +539,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         finishRace(wpm, accuracy);
       }
     },
-    [currentGameId, state.isRacing, state.raceText, state.raceStartTime, socketUpdateProgress, isSpectator]
+    [currentGameId, state.isRacing, state.raceText, state.raceStartTime, socketUpdateProgress, isSpectator, finishRace]
   );
 
-  const finishRace = useCallback(
-    async (wpm: number, accuracy: number): Promise<void> => {
-      if (!currentGameId || isSpectator) return;
-      
-      const finishTime = Date.now();
-      
-      try {
-        await socketFinishRace(wpm, accuracy, finishTime);
-        
-        toast.success('Race completed!', {
-          icon: '🏁',
-          duration: 3000
-        });
-      } catch (error) {
-        let message = 'Failed to finish race';
-        if (error instanceof Error) {
-          message = error.message;
-        }
-        
-        toast.error(message);
-      }
-    },
-    [currentGameId, socketFinishRace, isSpectator]
-  );
+  
 
   const getReplay = useCallback(
     async (gameId: string): Promise<void> => {

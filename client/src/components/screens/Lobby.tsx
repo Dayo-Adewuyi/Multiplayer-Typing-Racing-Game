@@ -23,9 +23,10 @@ const Lobby: React.FC = () => {
     isSpectator, 
     isReady, 
     markReady, 
-    leaveGame, 
-    countdown 
+    leaveGame
   } = useGame();
+
+  const {countdown} = useSocket();
   const { isConnected } = useSocket();
   
   const [copied, setCopied] = useState(false);
@@ -373,7 +374,7 @@ const Lobby: React.FC = () => {
                       All players are ready! Race will start momentarily.
                     </p>
                   ) : (
-                    <p>All players must be ready to start the race. Minimum 2 players required.</p>
+                    <p>All players must be ready to start the race. Minimum 4 players required.</p>
                   )}
                 </div>
               </div>

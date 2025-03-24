@@ -3,18 +3,16 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useGame } from '../../context/GameContext';
 import { useSocket } from '../../context/SocketContext';
-import { Player } from '../../context/SocketContext';
 
 import RaceTimer from '../game/RaceTimer';
 
 import { 
   TrophyIcon, 
   ChartBarIcon, 
-  ClockIcon, 
-  CheckCircleIcon, 
-  ArrowLeftIcon, 
+CheckCircleIcon,  
   HomeIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  FilmIcon
 } from '@heroicons/react/24/outline';
 
 const MedalIcon: React.FC<{ position: number }> = ({ position }) => {
@@ -77,7 +75,7 @@ const Results: React.FC = () => {
       if (gameId && !replay && !loading) {
         try {
           setLoading(true);
-          await getReplay(gameId);
+          await getReplay(gameId);  
         } catch (error) {
           console.error('Failed to fetch replay:', error);
         } finally {
@@ -178,6 +176,14 @@ const Results: React.FC = () => {
               <HomeIcon className="h-5 w-5" />
             </Link>
             <h1 className="text-xl md:text-2xl font-bold">Race Results</h1>
+            {gameId && (
+              <>
+                <span className="mx-2 text-gray-500">•</span>
+                <div className="text-sm text-gray-400">
+                  Game #{gameId.substring(0, 8)}
+                </div>
+              </>
+            )}
           </div>
           
           <RaceTimer time={raceTime} isFinished={true} />
@@ -273,7 +279,7 @@ const Results: React.FC = () => {
             
             {stats && (
               <motion.div 
-                className="bg-gray-800/70 backdrop-blur-xl rounded-xl border border-gray-700 overflow-hidden"
+                className="bg-gray-800/70 backdrop-blur-xl rounded-xl border border-gray-700 overflow-hidden mb-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.2 }}
@@ -293,7 +299,7 @@ const Results: React.FC = () => {
                     
                     <div className="bg-gray-700/50 rounded-lg p-3">
                       <div className="text-xs text-gray-400 mb-1">Top Speed</div>
-                      <div className="text-xl font-bold text-primary-400">{stats.fastestWpm}</div>
+                      <div className="text-xl font-bold text-primary-400">{stats.fastestWpm.toFixed(2)}</div>
                       <div className="text-xs text-gray-500">WPM</div>
                     </div>
                     
@@ -309,6 +315,26 @@ const Results: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </motion.div>
+            )}
+            
+            {replay && (
+              <motion.div 
+                className="bg-secondary-500/20 border border-secondary-500/40 rounded-lg p-4 text-center mb-6"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.4 }}
+              >
+                <FilmIcon className="h-6 w-6 text-secondary-400 mx-auto mb-2" />
+                <div className="text-md font-medium text-secondary-400">
+                  Race Replay Available
+                </div>
+                <Link 
+                  to={`/replay/${gameId}`}
+                  className="mt-2 text-xs text-white bg-secondary-500 hover:bg-secondary-600 py-1 px-3 rounded-full inline-flex items-center"
+                >
+                  <span>Watch Replay</span>
+                </Link>
               </motion.div>
             )}
           </div>
@@ -349,10 +375,11 @@ const Results: React.FC = () => {
                   <div className="overflow-hidden">
                     <div className="grid grid-cols-12 gap-2 py-2 text-sm font-medium text-gray-400 border-b border-gray-700">
                       <div className="col-span-1 text-center">#</div>
-                      <div className="col-span-4">Player</div>
+                      <div className="col-span-3">Player</div>
                       <div className="col-span-2 text-center">WPM</div>
                       <div className="col-span-2 text-center">Accuracy</div>
-                      <div className="col-span-3 text-right">Status</div>
+                      <div className="col-span-2 text-right">Status</div>
+                      {replay && <div className="col-span-2 text-right">Actions</div>}
                     </div>
                     
                     <div className="divide-y divide-gray-700">
@@ -389,7 +416,7 @@ const Results: React.FC = () => {
                               )}
                             </div>
                             
-                            <div className="col-span-4 flex items-center">
+                            <div className="col-span-3 flex items-center">
                               <div 
                                 className="w-3 h-3 rounded-full mr-2"
                                 style={{ backgroundColor: p.color }}
@@ -408,7 +435,7 @@ const Results: React.FC = () => {
                               {Math.round(p.accuracy)}%
                             </div>
                             
-                            <div className="col-span-3 text-right">
+                            <div className="col-span-2 text-right">
                               {p.position === 100 ? (
                                 <span className="inline-flex items-center text-green-400">
                                   <CheckCircleIcon className="h-4 w-4 mr-1" />
@@ -424,6 +451,18 @@ const Results: React.FC = () => {
                                 </span>
                               )}
                             </div>
+                            
+                            {replay && (
+                              <div className="col-span-2 text-right">
+                                <Link
+                                  to={`/replay/${gameId}?highlight=${p.id}`}
+                                  className="inline-flex items-center justify-center px-2 py-1 bg-secondary-600/40 hover:bg-secondary-600/60 rounded text-xs text-white"
+                                >
+                                  <FilmIcon className="h-3 w-3 mr-1" />
+                                  View Replay
+                                </Link>
+                              </div>
+                            )}
                           </motion.div>
                         );
                       })}
@@ -453,6 +492,16 @@ const Results: React.FC = () => {
                 <ArrowPathIcon className="h-5 w-5 mr-2" />
                 New Race
               </button>
+              
+              {replay && (
+                <Link 
+                  to={`/replay/${gameId}`}
+                  className="btn-secondary flex-1 py-4 rounded-lg flex items-center justify-center bg-secondary-500 hover:bg-secondary-600 text-white"
+                >
+                  <FilmIcon className="h-5 w-5 mr-2" />
+                  Watch Replay
+                </Link>
+              )}
               
               <Link 
                 to="/"

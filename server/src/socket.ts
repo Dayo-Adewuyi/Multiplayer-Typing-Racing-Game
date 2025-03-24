@@ -128,11 +128,10 @@ export function setupSocketServer(httpServer: http.Server): Server {
 
         const gameState = gameService.getGameState(payload.gameId);
         
-        // Only emit to other players at a throttled rate to reduce network traffic
         const throttledEmit = gameService.isThrottlingEnabled() && 
           gameService.getUpdateFrequencyMode() === 'low';
         
-        if (!throttledEmit || Math.random() < 0.2) { // Emit ~20% of updates when throttling
+        if (!throttledEmit || Math.random() < 0.2) { 
           io.to(payload.gameId).emit(ServerEvents.GAME_STATE_UPDATE, {
             gameState,
             playerId: socket.id,
@@ -140,7 +139,6 @@ export function setupSocketServer(httpServer: http.Server): Server {
           });
         }
       } catch (error) {
-        // Don't send error to client for progress updates to avoid spam
         logger.warn('Error updating progress', { error, socketId: socket.id });
       }
     });
@@ -170,14 +168,11 @@ export function setupSocketServer(httpServer: http.Server): Server {
           accuracy: payload.accuracy
         });
 
-        // If all players have finished, emit an additional event
         if (allFinished) {
           const replay = gameService.getRaceReplay(payload.gameId);
           
-          // Get the complete game state with final positions
           const finalGameState = gameService.getGameState(payload.gameId);
           
-          // Calculate rankings and statistics
           const activePlayers = finalGameState.players.filter(
             p => p.isConnected && !p.isSpectator
           );
@@ -213,12 +208,11 @@ export function setupSocketServer(httpServer: http.Server): Server {
             stats: {
               avgWpm,
               avgAccuracy,
-              finishRate: 1.0 // All players finished
+              finishRate: 1.0 
             },
             replayAvailable: !!replay
           };
           
-          // Emit the summary to all clients in the game
           io.to(payload.gameId).emit(ServerEvents.GAME_FINISHED, {
             gameState: finalGameState,
             summary: raceSummary
@@ -271,7 +265,6 @@ export function setupSocketServer(httpServer: http.Server): Server {
       }
     });
 
-    // Admin-only events for server management (should be secured in production)
     socket.on(ClientEvents.GET_ALL_GAMES, () => {
       try {
         const games = gameService.getAllGames();
@@ -352,7 +345,6 @@ export function setupSocketServer(httpServer: http.Server): Server {
           }
         }
         
-        // Send updated status
         const status = gameService.getSystemStatus();
         io.emit(ServerEvents.GAME_STATE_UPDATE, { 
           type: 'system_status',
@@ -365,7 +357,6 @@ export function setupSocketServer(httpServer: http.Server): Server {
       }
     });
 
-    // Utility functions
     function handlePlayerDisconnect(playerId: string): void {
       try {
         const gameIds = gameService.getPlayerGames(playerId);

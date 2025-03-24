@@ -81,6 +81,7 @@ const Race: React.FC = () => {
     }
   }, [isRacing, isSpectator]);
 
+  
   const calculateWPM = useCallback((typed: string, timeMs: number) => {
     if (timeMs <= 0) return 0;
     
@@ -214,7 +215,7 @@ const Race: React.FC = () => {
           
           <RaceTimer 
             time={displayRaceTimer} 
-            isFinished={isFinished} 
+            isFinished={completed || isFinished} 
           />
         </div>
         
@@ -238,7 +239,7 @@ const Race: React.FC = () => {
                   ref={textInputRef}
                   value={typedText}
                   onChange={handleTyping}
-                  disabled={!isRacing || isFinished || isSpectator || completed}
+                  disabled={!isRacing  || completed || isFinished || isSpectator }
                   placeholder={
                     isSpectator 
                       ? "You are in spectator mode" 
@@ -320,14 +321,15 @@ const Race: React.FC = () => {
               </div>
               
               <p className="text-gray-300 mb-6">
-                View the full results to see how you ranked against other players!
+                Wait for others to finish to see the final results.
               </p>
               
               <button
-                onClick={() => navigate(`/results/${gameId}`)}
-                className="btn-primary w-full py-3"
+              onClick={(e) => {
+                e.stopPropagation(); 
+                navigate(`/results/${gameId}`); 
+              }}
               >
-                View Results
               </button>
             </motion.div>
           </motion.div>
