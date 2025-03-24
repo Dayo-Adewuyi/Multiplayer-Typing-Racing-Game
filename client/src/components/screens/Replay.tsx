@@ -1,9 +1,8 @@
 import { CarIcon } from '../game/RaceTrack';
-import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useGame } from '../../context/GameContext';
-import { useSocket } from '../../context/SocketContext';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 import RaceTimer from '../game/RaceTimer';
@@ -88,7 +87,7 @@ const RaceTextVisualization: React.FC<{
     }, 50);
     
     return () => clearTimeout(scrollTimeout);
-  }, [highlightedPlayer?.currentIndex, highlightedPlayer?.id]);
+  }, [highlightedPlayer?.currentIndex, highlightedPlayer?.id, highlightedPlayer]);
   
   return (
     <div 
@@ -268,7 +267,6 @@ const Replay: React.FC = () => {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
   const { replay, getReplay, resetGame } = useGame();
-  const { isConnected } = useSocket();
   const [searchParams] = useSearchParams();
   const highlightParam = searchParams.get('highlight');
   
@@ -285,6 +283,7 @@ const Replay: React.FC = () => {
   const lastFrameTimeRef = useRef<number>(0);
   const timelineRef = useRef<HTMLDivElement>(null);
   
+ 
   useEffect(() => {
     const fetchReplay = async () => {
       if (gameId && !replay && !loading) {
